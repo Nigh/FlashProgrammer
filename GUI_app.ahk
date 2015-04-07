@@ -3,6 +3,24 @@ drag:
 PostMessage, 0xA1, 2
 Return
 
+PortSelect:
+gui, Submit, NoHide
+errorMsg(ComPorts)
+if(hSerial!=""){
+	hSerial.close()
+}
+hSerial:=new Serial(ComPorts)
+if(hSerial.begin("115200")<1){
+	setLED(LED_RED)
+	hSerial.close()
+	hSerial:=""
+}
+Else
+{
+	setLED(LED_GREEN)
+}
+Return
+
 SerialRead:
 VarSetCapacity(_,128,0xff)
 RawLength:=sHandle.RawRead(_,32)

@@ -1,7 +1,8 @@
 
 #include serial.ahk
-
 OnExit, ExitAll
+
+
 
 OnMessage(0x219, "ON_DEVICECHANGE")
 SetFormat, Integer, HEX
@@ -15,6 +16,7 @@ SetFormat, Integer, HEX
 
 SetTimer, SerialRead, 50
 #include GUI.ahk
+ON_DEVICECHANGE(0,0,0,0)
 Return
 
 #include GUI_app.ahk
@@ -22,13 +24,21 @@ Return
 
 ON_DEVICECHANGE(wp,lp,msg,hwnd)
 {
-	global ComList
+	global ComList,hSerial,LED_OFF
 	com_scan()
 	ComList:=getComList()
-	output:=""
-	Loop, Parse, ComList, |,
-		output.=A_LoopField "`n"
-	Msgbox, % ComList "`n`n" output
+	
+	if(hSerial.Serial_Port and !InStr(ComList,hSerial.Serial_Port)){
+		setLED(LED_OFF)
+		hSerial.close()
+		hSerial:=""
+	}
+	; output:=""
+	; Loop, Parse, ComList, |,
+	; 	output.=A_LoopField "`n"
+	; Msgbox, % ComList
+	GuiControl, , ComPorts, % ComList
+	; Msgbox, % ComList "`n`n" output
 }
 
 

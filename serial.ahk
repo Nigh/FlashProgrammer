@@ -1,5 +1,10 @@
 
 
+errorMsg(txt)
+{
+	Msgbox, 0x42010,,% txt
+}
+
 class Serial
 {
 	static Serial_Port:="COM8"
@@ -66,9 +71,9 @@ class Serial
 		 	,"UInt", &DCB)      	;lpDCB
 		If (BCD_Result <> 1)
 		{
-			MsgBox, There is a problem with Serial Port communication. `nFailed Dll BuildCommDCB, BCD_Result=%BCD_Result% `nThe Script Will Now Exit.
+			errorMsg("There is a problem with Serial Port communication. `nFailed Dll BuildCommDCB, BCD_Result=" BCD_Result "`nThe Script Will Now Exit.")
 			this.RS232_Close()
-			ExitApp
+			Return, -1
 		}
 		;###### Create RS232 COM File ######
 		;Creates the RS232 COM Port File Handle
@@ -83,9 +88,9 @@ class Serial
 		 	,"Cdecl Int")
 		If (this.__handle < 1)
 		{
-			MsgBox, There is a problem with Serial Port communication. ;`nFailed Dll CreateFile, this.__handle=%this.__handle% `nThe Script Will Now Exit.
+			errorMsg("There is a problem with Serial Port communication.") ;`nFailed Dll CreateFile, this.__handle=%this.__handle% `nThe Script Will Now Exit.
 			this.RS232_Close()
-			ExitApp
+			Return, -2
 		}
 		;###### Set COM State ######
 		;Sets the RS232 COM Port number, baud rate,...
@@ -94,9 +99,9 @@ class Serial
 		 	,"UInt", &DCB)        	;Pointer to DCB structure
 		If (SCS_Result <> 1)
 		{
-			MsgBox, There is a problem with Serial Port communication. ;`nFailed Dll SetCommState, SCS_Result=%SCS_Result% `nThe Script Will Now Exit.
+			errorMsg("There is a problem with Serial Port communication.") ;`nFailed Dll SetCommState, SCS_Result=%SCS_Result% `nThe Script Will Now Exit.
 			this.RS232_Close()
-			ExitApp
+			Return, -3
 		}
 		;###### Create the SetCommTimeouts Structure ######
 		ReadIntervalTimeout      	= 0xffffffff
@@ -116,9 +121,9 @@ class Serial
 		 ,"UInt", &Data)       	;Pointer to the data structure
 		If (SCT_result <> 1)
 		{
-			MsgBox, There is a problem with Serial Port communication. `nFailed Dll SetCommState, SCT_result=%SCT_result% `nThe Script Will Now Exit.
+			errorMsg("There is a problem with Serial Port communication. `nFailed Dll SetCommState, SCT_result=" SCT_result "`nThe Script Will Now Exit.")
 			this.RS232_Close()
-			ExitApp
+			Return, -4
 		}
 		Return % this.__handle
 	}
@@ -128,7 +133,7 @@ class Serial
 		;###### Close the COM File ######
 		CH_result := DllCall("CloseHandle", "UInt", this.__handle)
 		If (CH_result <> 1)
-		MsgBox, Failed Dll CloseHandle CH_result=%CH_result%
+		errorMsg("Failed Dll CloseHandle CH_result=" CH_result)
 		Return
 	}
 
@@ -155,7 +160,7 @@ class Serial
 		 	,"UInt*", Bytes_Sent   	;Returns pointer to num bytes sent
 		 	,"Int"	, "NULL")
 		If (WF_Result <> 1 or Bytes_Sent <> Data_Length)
-		MsgBox, Failed Dll WriteFile to RS232 COM, result=%WF_Result% `nData Length=%Data_Length% `nBytes_Sent=%Bytes_Sent%
+		errorMsg("Failed Dll WriteFile to RS232 COM, result=" WF_Result "`nData Length=" Data_Length "`nBytes_Sent=" Bytes_Sent)
 	}
 
 }

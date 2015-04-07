@@ -1,7 +1,7 @@
 
 
 If(!pToken := Gdip_Startup()){
-	Msgbox, GDIP init failed!
+	errorMsg("GDIP init failed!")
 	ExitApp
 }
 ; _DEBUG_:=1
@@ -11,12 +11,13 @@ Gui, Color, 333631, 333631
 Gui, font, s24 cffffff, ;微软雅黑
 Gui, Add, Text, w350 center gdrag,Fineck SN Code`n Programmer
 Gui, font, s12 cffffff, Consolas
-gui, add, Pic,w27 h%LED_h% Border 0xE hwndstatuLED
-Gui, Add, DDL,x+10 w70 h%LED_h% r7 vcomPort, COM1|COM2|COM3
-Gui, Add, Button, x+10 h%LED_h%, Connect
-Gui, Add, Text, xm,Log:
+Gui, Add, Text, ,Port:
+Gui, Add, DDL,x+5 yp-5 w70 h%LED_h% r7 vComPorts gPortSelect,
+gui, add, Pic,x+10 w27 h%LED_h% Border 0xE hwndstatuLED
+; Gui, Add, Button, x+10 h%LED_h%, Connect
+Gui, Add, Text, xm y+10,Log:
 Gui, Add, Edit, disabled y+0 w350 r18 voutput Hwndedit,
-Gui, Add, Text, xm,SN Code:
+Gui, Add, Text, xm y+10,SN Code:
 Gui, Add, Edit, y+0 w350 r1 vvar ginput, 
 
 Gui, font, s8 cffffff, ;微软雅黑
