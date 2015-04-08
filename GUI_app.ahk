@@ -5,7 +5,7 @@ Return
 
 PortSelect:
 gui, Submit, NoHide
-errorMsg(ComPorts)
+; errorMsg(ComPorts)
 if(hSerial!=""){
 	hSerial.close()
 }
@@ -14,14 +14,22 @@ if(hSerial.begin("115200")<1){
 	setLED(LED_RED)
 	hSerial.close()
 	hSerial:=""
+	sHandle:=""
+	GuiControl, , var,
+	GuiControl, Disable, var,
 }
 Else
 {
 	setLED(LED_GREEN)
+	sHandle:=fileOpen(hSerial.__handle,"h")
+	GuiControl, Enable, var,
+	GuiControl, Focus, var
 }
 Return
 
 SerialRead:
+if(!sHandle)
+Return
 VarSetCapacity(_,128,0xff)
 RawLength:=sHandle.RawRead(_,32)
 loop, % RawLength
@@ -30,11 +38,22 @@ loop, % RawLength
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+2<32 and revBuf.MaxIndex()>=revBuf[2]+2){
-					_print:="接收：`r`n"
+				_print:="接收："
 				loop, % revBuf.MaxIndex()-4
 					_print.=chr(revBuf[A_Index+3])
-				_print.="`r`n`r`n"
-				Control,EditPaste,% _print,, ahk_id %edit%
+				_print.="`r`n"
+				SetTimer, timeOut, Off
+				print(_print)
+				if(InStr(_print, lastSend)){
+					Gui, Color, 238d37, 333631
+					print("校对通过!!!`r`n`r`n")
+				}Else{
+					Gui, Color, aa3631, 333631
+					print("校对异常!!!`r`n`r`n")
+				}
+				GuiControl, Enable, var,
+				GuiControl, Focus, var
+				; Control,EditPaste,% _print,, ahk_id %edit%
 				revBuf:=Object()
 			}
 		}
@@ -67,8 +86,25 @@ if(StrLen(var)>=14){
 	SerialOut:=""
 	loop, 14
 		SerialOut.=Chr(NumGet(SNCode,A_Index+2,"UChar"))
-	Control,EditPaste,% "发送:`r`n",, ahk_id %edit%
-	Control,EditPaste,% SerialOut "`r`n",, ahk_id %edit%
+	print("发送:" SerialOut "`r`n")
+	lastSend:=SerialOut
 	hSerial.Write(&SNCode,18)
+	GuiControl, , var,
+	GuiControl, Disable, var,
+	SetTimer, timeOut, -3000
+	Gui, Color, 333631, 333631
 }
 Return
+
+timeOut:
+print("接收超时!!!`r`n`r`n")
+Gui, Color, aa3631, 333631
+GuiControl, Enable, var,
+GuiControl, Focus, var
+Return
+
+print(txt)
+{
+	global edit
+	Control,EditPaste,% txt,, ahk_id %edit%
+}

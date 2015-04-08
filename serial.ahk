@@ -7,7 +7,8 @@ errorMsg(txt)
 
 class Serial
 {
-	static Serial_Port:="COM8"
+	; static Serial_Port:="COM8"
+	static Serial_Port:=""
 	static Serial_Baud:="9600"
 	static Serial_Parity:="N"
 	static Serial_Data:="8"

@@ -16,9 +16,9 @@ Gui, Add, DDL,x+5 yp-5 w70 h%LED_h% r7 vComPorts gPortSelect,
 gui, add, Pic,x+10 w27 h%LED_h% Border 0xE hwndstatuLED
 ; Gui, Add, Button, x+10 h%LED_h%, Connect
 Gui, Add, Text, xm y+10,Log:
-Gui, Add, Edit, disabled y+0 w350 r18 voutput Hwndedit,
+Gui, Add, Edit, ReadOnly c27cfff y+0 w350 r18 voutput Hwndedit,
 Gui, Add, Text, xm y+10,SN Code:
-Gui, Add, Edit, y+0 w350 r1 vvar ginput, 
+Gui, Add, Edit, y+0 w350 r1 vvar ginput Disabled, 
 
 Gui, font, s8 cffffff, ;微软雅黑
 Gui, Add, Text, right w350 y+0 gdrag, jiyucheng007@gmail.com

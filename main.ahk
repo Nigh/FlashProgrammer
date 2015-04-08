@@ -1,4 +1,4 @@
-
+﻿
 #include serial.ahk
 OnExit, ExitAll
 
@@ -10,11 +10,11 @@ SetFormat, Integer, HEX
 ; if(hSerial!=""){
 ; 	hSerial.close()
 ; }
-; hSerial:=new Serial("COM5")
+; hSerial:=new Serial("COM7")
 ; hSerial.begin("115200")
 ; sHandle:=fileOpen(hSerial.__handle,"h")
 
-SetTimer, SerialRead, 50
+SetTimer, SerialRead, 150
 #include GUI.ahk
 ON_DEVICECHANGE(0,0,0,0)
 Return
@@ -24,7 +24,7 @@ Return
 
 ON_DEVICECHANGE(wp,lp,msg,hwnd)
 {
-	global ComList,hSerial,LED_OFF
+	global ComList,hSerial,LED_OFF,var
 	com_scan()
 	ComList:=getComList()
 	
@@ -32,6 +32,8 @@ ON_DEVICECHANGE(wp,lp,msg,hwnd)
 		setLED(LED_OFF)
 		hSerial.close()
 		hSerial:=""
+		GuiControl, , var,
+		GuiControl, Disable, var,
 	}
 	; output:=""
 	; Loop, Parse, ComList, |,
@@ -42,7 +44,7 @@ ON_DEVICECHANGE(wp,lp,msg,hwnd)
 }
 
 
-F5::ExitApp
+Esc::ExitApp
 
 ExitAll:
 hSerial.close()
