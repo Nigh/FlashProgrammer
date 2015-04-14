@@ -38,7 +38,7 @@ loop, % RawLength
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+2<32 and revBuf.MaxIndex()>=revBuf[2]+2){
-				_print:="接收："
+				_print:="接收:"
 				loop, % revBuf.MaxIndex()-4
 					_print.=chr(revBuf[A_Index+3])
 				_print.="`r`n"
@@ -68,31 +68,66 @@ loop, % RawLength
 ; }
 Return
 
+bufDiff(buf)
+{
+	static buf1:=""
+	static buf2:=""
+	static flag:=0
+	if(!buf)
+		return 0
+	flag:=!flag
+	if(flag)
+	{
+		buf1:=buf
+	}
+	Else
+	{
+		buf2:=buf
+	}
+	if(buf1=buf2){
+		tmp:=buf2
+		buf1:=""
+		buf2:=""
+		Return tmp
+	}
+	Else{
+		Return 0
+	}
+}
+
 input:
 gui, Submit, NoHide
 if(StrLen(var)>=14){
 	GuiControl, Text, var,
-	VarSetCapacity(SNCode, 18, 0x00)
-	NumPut(0x23, SNCode,0,"UChar")
-	NumPut(16, SNCode,1,"UChar")
-	NumPut(0x09, SNCode,2,"UChar")
-	loop, 14
-		NumPut(asc(SubStr(var, A_Index, 1)), SNCode,A_Index+2,"UChar")
-	checkSum:=0
-	loop, 15
-		checkSum+=NumGet(SNCode,A_Index+1,"UChar")
-	checkSum&=0xFF
-	NumPut(checkSum, SNCode,17,"UChar")
-	SerialOut:=""
-	loop, 14
-		SerialOut.=Chr(NumGet(SNCode,A_Index+2,"UChar"))
-	print("发送:" SerialOut "`r`n")
-	lastSend:=SerialOut
-	hSerial.Write(&SNCode,18)
-	GuiControl, , var,
-	GuiControl, Disable, var,
-	SetTimer, timeOut, -3000
-	Gui, Color, 333631, 333631
+	temp:=bufDiff(var)
+	if(temp)
+	{
+		VarSetCapacity(SNCode, 18, 0x00)
+		NumPut(0x23, SNCode,0,"UChar")
+		NumPut(16, SNCode,1,"UChar")
+		NumPut(0x09, SNCode,2,"UChar")
+		loop, 14
+			NumPut(asc(SubStr(var, A_Index, 1)), SNCode,A_Index+2,"UChar")
+		checkSum:=0
+		loop, 15
+			checkSum+=NumGet(SNCode,A_Index+1,"UChar")
+		checkSum&=0xFF
+		NumPut(checkSum, SNCode,17,"UChar")
+		SerialOut:=""
+		loop, 14
+			SerialOut.=Chr(NumGet(SNCode,A_Index+2,"UChar"))
+		print("确认发送:" SerialOut "`r`n")
+		lastSend:=SerialOut
+		hSerial.Write(&SNCode,18)
+		GuiControl, , var,
+		GuiControl, Disable, var,
+		SetTimer, timeOut, -3000
+		Gui, Color, 333631, 333631
+	}
+	Else
+	{
+		print("缓存校验:" var "`r`n")
+	}
 }
 Return
 
