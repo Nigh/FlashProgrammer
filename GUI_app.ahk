@@ -50,10 +50,11 @@ loop, % RawLength
 				if(lastSend and InStr(revCode, lastSend)){
 					Gui, Color, 238d37, 333631
 					print("校对通过!!!`r`n`r`n")
+					writeLog("校对通过 --- OK`r`n",1)
 					SNCodeSuccess(lastSend)
 				}Else{
 					Gui, Color, aa3631, 333631
-					writeLog("校对异常:#" revCode "#",1)
+					writeLog("校对异常:#" revCode "#`r`n",1)
 					print("校对异常!!!`r`n`r`n")
 				}
 				GuiControl, Enable, var,
