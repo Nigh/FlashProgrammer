@@ -11,6 +11,7 @@ if(hSerial!=""){
 }
 hSerial:=new Serial(ComPorts)
 if(hSerial.begin("115200")<1){
+	writeLog("Hid设备打开失败",1)
 	setLED(LED_RED)
 	hSerial.close()
 	hSerial:=""
@@ -20,6 +21,7 @@ if(hSerial.begin("115200")<1){
 }
 Else
 {
+	writeLog("Hid设备打开成功",1)
 	setLED(LED_GREEN)
 	sHandle:=fileOpen(hSerial.__handle,"h")
 	GuiControl, Enable, var,
@@ -39,16 +41,19 @@ loop, % RawLength
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+2<32 and revBuf.MaxIndex()>=revBuf[2]+2){
 				_print:="接收:"
+				revCode:=""
 				loop, % revBuf.MaxIndex()-4
-					_print.=chr(revBuf[A_Index+3])
-				_print.="`r`n"
+					revCode.=chr(revBuf[A_Index+3])
+				_print.=revCode "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
-				if(InStr(_print, lastSend)){
+				if(lastSend and InStr(revCode, lastSend)){
 					Gui, Color, 238d37, 333631
 					print("校对通过!!!`r`n`r`n")
+					SNCodeSuccess(lastSend)
 				}Else{
 					Gui, Color, aa3631, 333631
+					writeLog("校对异常:#" revCode "#",1)
 					print("校对异常!!!`r`n`r`n")
 				}
 				GuiControl, Enable, var,
@@ -99,9 +104,16 @@ input:
 gui, Submit, NoHide
 if(StrLen(var)>=14){
 	GuiControl, Text, var,
+	writeLog("扫码: <" var ">",1)
+	if(!isSNInLib(var)){
+		writeLog("此码不在仓库中")
+		print("<" var "> 此码不在库中`r`n")
+		Exit
+	}
 	temp:=bufDiff(var)
 	if(temp)
 	{
+		writeLog("两次扫码一致，执行写入[" var "]")
 		VarSetCapacity(SNCode, 18, 0x00)
 		NumPut(0x23, SNCode,0,"UChar")
 		NumPut(16, SNCode,1,"UChar")
@@ -132,6 +144,7 @@ if(StrLen(var)>=14){
 Return
 
 timeOut:
+writeLog("校对超时",1)
 print("接收超时!!!`r`n`r`n")
 Gui, Color, aa3631, 333631
 GuiControl, Enable, var,

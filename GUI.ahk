@@ -22,7 +22,7 @@ Gui, Add, Edit, y+0 w350 r1 vvar ginput Disabled,
 
 Gui, font, s8 cffffff, ;微软雅黑
 Gui, Add, Text, right w350 y+0 gdrag, jiyucheng007@gmail.com
-Gui, Add, Text, right w350 y+0 gdrag, version 1.0.0 beta
+Gui, Add, Text, right w350 y+0 gdrag, version 1.1.0 beta
 Gui, Show, AutoSize, 01010001110101010
 WinSet, Transparent, 230, ahk_id %hGui%
 

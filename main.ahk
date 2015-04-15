@@ -14,6 +14,7 @@ SetFormat, Integer, HEX
 ; hSerial.begin("115200")
 ; sHandle:=fileOpen(hSerial.__handle,"h")
 
+#include log.ahk
 SetTimer, SerialRead, 150
 #include GUI.ahk
 ON_DEVICECHANGE(0,0,0,0)
@@ -48,5 +49,7 @@ Esc::ExitApp
 
 ExitAll:
 hSerial.close()
+logDetail.close()
+logHandle.close()
 ExitApp, 0
 
