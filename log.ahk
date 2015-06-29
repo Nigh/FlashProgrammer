@@ -7,11 +7,11 @@ if(!IsObject(logHandle)){
 	ExitApp, -1
 }
 
-FileRead, snLib, SNCodeLib.csv
-if(!snLib){
-	errorMsg("没有找到SN码仓库，请确认SN码仓库已就位。")
-	ExitApp, -2
-}
+; FileRead, snLib, SNCodeLib.csv
+; if(!snLib){
+; 	errorMsg("没有找到SN码仓库，请确认SN码仓库已就位。")
+; 	ExitApp, -2
+; }
 
 logDetail:=fileOpen("log.log","a")
 

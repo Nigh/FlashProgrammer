@@ -3,6 +3,11 @@ drag:
 PostMessage, 0xA1, 2
 Return
 
+LengthSelect:
+gui, Submit, NoHide
+writeLog("数据长度设置为:" DataLength,1)
+Return
+
 PortSelect:
 gui, Submit, NoHide
 ; errorMsg(ComPorts)
@@ -103,26 +108,26 @@ bufDiff(buf)
 
 input:
 gui, Submit, NoHide
-if(StrLen(var)>=14){
+if(StrLen(var)>=DataLength){
 	GuiControl, Text, var,
 	writeLog("扫码: <" var ">",1)
-	if(!isSNInLib(var)){
-		writeLog("此码不在仓库中")
-		print("<" var "> 此码不在库中`r`n")
-		Exit
-	}
+	; if(!isSNInLib(var)){
+	; 	writeLog("此码不在仓库中")
+	; 	print("<" var "> 此码不在库中`r`n")
+	; 	Exit
+	; }
 	temp:=bufDiff(var)
 	if(temp)
 	{
 		writeLog("两次扫码一致，执行写入[" var "]")
-		VarSetCapacity(SNCode, 18, 0x00)
+		VarSetCapacity(SNCode, DataLength+4, 0x00)
 		NumPut(0x23, SNCode,0,"UChar")
-		NumPut(16, SNCode,1,"UChar")
+		NumPut(DataLength+2, SNCode,1,"UChar")
 		NumPut(0x09, SNCode,2,"UChar")
-		loop, 14
+		loop, % DataLength
 			NumPut(asc(SubStr(var, A_Index, 1)), SNCode,A_Index+2,"UChar")
 		checkSum:=0
-		loop, 15
+		loop, % DataLength+1
 			checkSum+=NumGet(SNCode,A_Index+1,"UChar")
 		checkSum&=0xFF
 		NumPut(checkSum, SNCode,17,"UChar")
@@ -131,7 +136,7 @@ if(StrLen(var)>=14){
 			SerialOut.=Chr(NumGet(SNCode,A_Index+2,"UChar"))
 		print("确认发送:" SerialOut "`r`n")
 		lastSend:=SerialOut
-		hSerial.Write(&SNCode,18)
+		hSerial.Write(&SNCode,DataLength+4)
 		GuiControl, , var,
 		GuiControl, Disable, var,
 		SetTimer, timeOut, -3000
