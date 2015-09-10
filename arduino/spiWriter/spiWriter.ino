@@ -201,7 +201,7 @@ void flashProgram(void)
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
 	buf[uartBuffer.buffer[1]]=',';
-	flash_read(0x40100,buf+uartBuffer.buffer[1]-7,7);
+	flash_read(0x40100,buf+uartBuffer.buffer[1]-6,6);
 	Serial.write('#');
 	Serial.write(uartBuffer.buffer[1]);
 	Serial.write(buf,uartBuffer.buffer[1]);

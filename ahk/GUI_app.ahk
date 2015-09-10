@@ -163,7 +163,7 @@ if(StrLen(var)>=DataLength){
 
 		print("确认发送:" Shows "`r`n")
 		lastSend:=SerialOut
-		hSerial.Write(&SNCode,DataLength+3)
+		hSerial.Write(&SNCode,DataLength+3+7)
 		GuiControl, , var,
 		GuiControl, Disable, var,
 		SetTimer, timeOut, -3000
