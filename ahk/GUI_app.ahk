@@ -110,7 +110,7 @@ format_Hex(num)
 {
 	SetFormat, Integer, HEX
 	num:=num+0 ""
-	num:=SubStr("00" SubStr(num, 2),-1)
+	num:=SubStr("00" SubStr(num, 3),-1)
 	return num
 }
 
@@ -153,7 +153,7 @@ if(StrLen(var)>=DataLength){
 			SerialOut.=Chr(NumGet(SNCode,A_Index+1,"UChar"))
 		
 		Shows:=SubStr(SerialOut, 1, DataLength)
-		Shows.=","
+		Shows.=",`r`n"
 		Shows.=format_Hex(NumGet(SNCode,10,"UChar")) "-"
 		Shows.=format_Hex(NumGet(SNCode,11,"UChar")) "-"
 		Shows.=format_Hex(NumGet(SNCode,12,"UChar")) "-"
