@@ -16,7 +16,7 @@ Gui, Add, Text, ,Port:
 Gui, Add, DDL,x+5 w70 h%LED_h% r7 vComPorts gPortSelect,
 gui, add, Pic,x+10 w27 h%LED_h% Border 0xE hwndstatuLED
 Gui, Add, Text,x+10,Length:
-Gui, Add, DDL,x+5 w70 h%LED_h% r7 choose%DataLength% vDataLength gLengthSelect, 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20
+Gui, Add, DDL,x+5 w70 h%LED_h% r7 choose%DataLength% vDataLength gLengthSelect, 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30
 ; Gui, Add, Button, x+10 h%LED_h%, Connect
 Gui, Add, Text, xm y+10,Log:
 Gui, Add, Edit, ReadOnly c27cfff y+0 w350 r18 voutput Hwndedit,
