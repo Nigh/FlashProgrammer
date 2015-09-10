@@ -44,11 +44,11 @@ loop, % RawLength
 	revBuf.Insert(NumGet(_, A_Index-1, "UChar"))
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
-			if(revBuf[2]+2<32 and revBuf.MaxIndex()>=revBuf[2]+2){
+			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
 				_print:="接收:"
 				revCode:=""
-				loop, % revBuf.MaxIndex()-4
-					revCode.=chr(revBuf[A_Index+3])
+				loop, % revBuf.MaxIndex()-3
+					revCode.=chr(revBuf[A_Index+2])
 				_print.=revCode "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
