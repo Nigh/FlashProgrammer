@@ -39,3 +39,8 @@ SNCodeSuccess(code)
 	time:=A_Hour ":" A_Min ":" A_Sec "." A_MSec
 	logHandle.WriteLine(date " " time "," code)
 }
+
+getMacNumFromLib(ByRef SNCode)
+{
+	
+}
