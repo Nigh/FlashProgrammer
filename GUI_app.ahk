@@ -106,6 +106,9 @@ bufDiff(buf)
 	}
 }
 
+; uart数据帧格式:0x23 | dataLength | data... | checksum
+; dataLength指data...长度
+; checksum为data...的和
 input:
 gui, Submit, NoHide
 if(StrLen(var)>=DataLength){
@@ -122,21 +125,20 @@ if(StrLen(var)>=DataLength){
 		writeLog("两次扫码一致，执行写入[" var "]")
 		VarSetCapacity(SNCode, DataLength+4, 0x00)
 		NumPut(0x23, SNCode,0,"UChar")
-		NumPut(DataLength+2, SNCode,1,"UChar")
-		NumPut(0x09, SNCode,2,"UChar")
+		NumPut(DataLength, SNCode,1,"UChar")
 		loop, % DataLength
-			NumPut(asc(SubStr(var, A_Index, 1)), SNCode,A_Index+2,"UChar")
+			NumPut(asc(SubStr(var, A_Index, 1)), SNCode,A_Index+1,"UChar")
 		checkSum:=0
-		loop, % DataLength+1
+		loop, % DataLength
 			checkSum+=NumGet(SNCode,A_Index+1,"UChar")
 		checkSum&=0xFF
-		NumPut(checkSum, SNCode,17,"UChar")
+		NumPut(checkSum, SNCode,DataLength+2,"UChar")
 		SerialOut:=""
-		loop, 14
-			SerialOut.=Chr(NumGet(SNCode,A_Index+2,"UChar"))
+		loop, % DataLength
+			SerialOut.=Chr(NumGet(SNCode,A_Index+1,"UChar"))
 		print("确认发送:" SerialOut "`r`n")
 		lastSend:=SerialOut
-		hSerial.Write(&SNCode,DataLength+4)
+		hSerial.Write(&SNCode,DataLength+3)
 		GuiControl, , var,
 		GuiControl, Disable, var,
 		SetTimer, timeOut, -3000
