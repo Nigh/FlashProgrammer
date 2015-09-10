@@ -1,4 +1,5 @@
 ﻿
+#SingleInstance ignore
 #Include Gdip.ahk
 #include serial.ahk
 OnExit, ExitAll
