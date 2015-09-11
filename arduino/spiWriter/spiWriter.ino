@@ -203,7 +203,7 @@ void flashProgram(void)
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_Write(0x40000,uartBuffer.buffer+2,uartBuffer.buffer[1]-7);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-7,6);
+	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-6,6);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
 	buf[uartBuffer.buffer[1]-7]=',';
