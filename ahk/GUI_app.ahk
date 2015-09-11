@@ -45,7 +45,7 @@ loop, % RawLength
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
-				_print:="接收:"
+				_print:="接收打印:"
 				revCode:=""
 				loop, % revBuf[2]
 					revCode.=chr(revBuf[A_Index+2])
