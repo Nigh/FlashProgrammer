@@ -45,21 +45,26 @@ loop, % RawLength
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
-				_print:="接收:"
+				_print:="接收打印:"
 				revCode:=""
-				loop, % revBuf.MaxIndex()-3
+				loop, % revBuf[2]
 					revCode.=chr(revBuf[A_Index+2])
-				_print.=revCode "`r`n"
+				_print.=substr(revCode,1,revBuf[2]-7)
+				_print.= "@" getMacStrFrom(revBuf) "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
 				if(lastSend and InStr(revCode, lastSend)){
 					Gui, Color, 238d37, 333631
 					print("校对通过!!!`r`n`r`n")
 					writeLog("校对通过 --- OK`r`n",1)
-					SNCodeSuccess(lastSend)
+					temp:=""
+					temp.=substr(revCode,1,revBuf[2]-7)
+					temp.="@"
+					temp.=getMacStrFrom(revBuf)
+					SNCodeSuccess(temp)
 				}Else{
 					Gui, Color, aa3631, 333631
-					writeLog("校对异常:#" revCode "#`r`n",1)
+					writeLog("校对异常:`r`n#" revCode "`r`n#" lastSend "`r`n",1)
 					print("校对异常!!!`r`n`r`n")
 				}
 				GuiControl, Enable, var,
@@ -79,6 +84,18 @@ loop, % RawLength
 ; }
 Return
 
+getMacStrFrom(ByRef buf)
+{
+	temp:=""
+	temp.=format_Hex(buf[buf[2]-3]) "-"
+	temp.=format_Hex(buf[buf[2]-2]) "-"
+	temp.=format_Hex(buf[buf[2]-1]) "-"
+	temp.=format_Hex(buf[buf[2]+0]) "-"
+	temp.=format_Hex(buf[buf[2]+1]) "-"
+	temp.=format_Hex(buf[buf[2]+2])
+	return temp
+}
+
 bufDiff(buf)
 {
 	static buf1:=""
@@ -87,12 +104,9 @@ bufDiff(buf)
 	if(!buf)
 		return 0
 	flag:=!flag
-	if(flag)
-	{
+	if(flag) {
 		buf1:=buf
-	}
-	Else
-	{
+	} Else {
 		buf2:=buf
 	}
 	if(buf1=buf2){
@@ -100,8 +114,7 @@ bufDiff(buf)
 		buf1:=""
 		buf2:=""
 		Return tmp
-	}
-	Else{
+	} Else{
 		Return 0
 	}
 }
@@ -153,13 +166,13 @@ if(StrLen(var)>=DataLength){
 			SerialOut.=Chr(NumGet(SNCode,A_Index+1,"UChar"))
 		
 		Shows:=SubStr(SerialOut, 1, DataLength)
-		Shows.=",`r`n"
-		Shows.=format_Hex(NumGet(SNCode,10,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,11,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,12,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,13,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,14,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,15,"UChar"))
+		Shows.=","
+		Shows.=format_Hex(NumGet(SNCode,DataLength+3,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+4,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+5,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+6,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+7,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+8,"UChar"))
 
 		print("确认发送:" Shows "`r`n")
 		lastSend:=SerialOut

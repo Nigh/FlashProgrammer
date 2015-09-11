@@ -1,15 +1,21 @@
 
 
 // pin configration
-const int PIN_CS=9;
-const int PIN_CLK=10;
-const int PIN_MOSI=11;
-const int PIN_MISO=12;
-const int PIN_GND=13;
-
 #define gpio(x,n) digitalWrite(x,n)
 #define io_read(x) digitalRead(x)
 unsigned char SPI0RXD_RXD=0;
+
+// const unsigned int PIN_CS=4;
+// const unsigned int PIN_CLK=5;
+// const unsigned int PIN_MOSI=6;
+// const unsigned int PIN_MISO=7;
+// const unsigned int PIN_GND=13;
+
+#define PIN_CS 4
+#define PIN_CLK 5
+#define PIN_MOSI 6
+#define PIN_MISO 7
+#define PIN_GND 13
 
 void setup(void)
 {
@@ -197,10 +203,10 @@ void flashProgram(void)
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_Write(0x40000,uartBuffer.buffer+2,uartBuffer.buffer[1]-7);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-7,6);
+	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-6,6);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
-	buf[uartBuffer.buffer[1]]=',';
+	buf[uartBuffer.buffer[1]-7]=',';
 	flash_read(0x40100,buf+uartBuffer.buffer[1]-6,6);
 	Serial.write('#');
 	Serial.write(uartBuffer.buffer[1]);

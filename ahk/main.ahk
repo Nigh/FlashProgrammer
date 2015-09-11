@@ -47,7 +47,8 @@ ON_DEVICECHANGE(wp,lp,msg,hwnd)
 }
 
 
-Esc::ExitApp
+_exit:
+ExitApp
 
 ExitAll:
 hSerial.close()
@@ -55,3 +56,8 @@ logDetail.close()
 logHandle.close()
 ExitApp, 0
 
+_reload:
+hSerial.close()
+logDetail.close()
+logHandle.close()
+Reload
