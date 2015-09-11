@@ -9,8 +9,8 @@ DataLength:=8
 LED_h:=27
 Gui, -Caption +Border +LastFound +Owner +ToolWindow +hwndhGui +AlwaysOnTop
 Gui, Color, 333631, 333631
-Gui, font, s24 cffffff, ;微软雅黑
-Gui, Add, Text, w350 center gdrag,GeeWi Flash`n Programmer
+Gui, font, s24 cffffff, Impact
+Gui, Add, Text, w350 center gdrag,W07 Flash`n Programmer
 Gui, font, s12 cffffff, Consolas
 Gui, Add, Text, ,Port:
 Gui, Add, DDL,x+5 w70 h%LED_h% r7 vComPorts gPortSelect,
@@ -25,7 +25,7 @@ Gui, Add, Edit, y+0 w350 r1 vvar ginput Disabled,
 
 Gui, font, s8 cffffff, ;微软雅黑
 Gui, Add, Text, right w350 y+0 gdrag, jiyucheng007@gmail.com
-Gui, Add, Text, right w350 y+0 gdrag, version 1.2.0 GeeWi
+Gui, Add, Text, right w350 y+0 gdrag, version 1.4.0 W07
 Gui, Show, AutoSize, 01010001110101010
 WinSet, Transparent, 230, ahk_id %hGui%
 
