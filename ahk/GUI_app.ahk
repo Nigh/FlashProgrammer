@@ -154,12 +154,12 @@ if(StrLen(var)>=DataLength){
 		
 		Shows:=SubStr(SerialOut, 1, DataLength)
 		Shows.=",`r`n"
-		Shows.=format_Hex(NumGet(SNCode,10,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,11,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,12,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,13,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,14,"UChar")) "-"
-		Shows.=format_Hex(NumGet(SNCode,15,"UChar"))
+		Shows.=format_Hex(NumGet(SNCode,DataLength+3,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+4,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+5,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+6,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+7,"UChar")) "-"
+		Shows.=format_Hex(NumGet(SNCode,DataLength+8,"UChar"))
 
 		print("确认发送:" Shows "`r`n")
 		lastSend:=SerialOut
