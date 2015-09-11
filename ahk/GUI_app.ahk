@@ -47,9 +47,16 @@ loop, % RawLength
 			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
 				_print:="接收:"
 				revCode:=""
-				loop, % revBuf.MaxIndex()-3
+				loop, % revBuf[2]
 					revCode.=chr(revBuf[A_Index+2])
-				_print.=revCode "`r`n"
+				_print.=substr(revCode,1,revBuf[2]-7)
+				_print.= "@"
+				_print.=format_Hex(revBuf[revBuf[2]-3]) "-"
+				_print.=format_Hex(revBuf[revBuf[2]-2]) "-"
+				_print.=format_Hex(revBuf[revBuf[2]-1]) "-"
+				_print.=format_Hex(revBuf[revBuf[2]+0]) "-"
+				_print.=format_Hex(revBuf[revBuf[2]+1]) "-"
+				_print.=format_Hex(revBuf[revBuf[2]+2]) "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
 				if(lastSend and InStr(revCode, lastSend)){
@@ -153,7 +160,7 @@ if(StrLen(var)>=DataLength){
 			SerialOut.=Chr(NumGet(SNCode,A_Index+1,"UChar"))
 		
 		Shows:=SubStr(SerialOut, 1, DataLength)
-		Shows.=",`r`n"
+		Shows.=","
 		Shows.=format_Hex(NumGet(SNCode,DataLength+3,"UChar")) "-"
 		Shows.=format_Hex(NumGet(SNCode,DataLength+4,"UChar")) "-"
 		Shows.=format_Hex(NumGet(SNCode,DataLength+5,"UChar")) "-"
