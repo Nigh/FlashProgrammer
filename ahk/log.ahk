@@ -43,7 +43,7 @@ SNCodeSuccess(code)
 getMacNumFromLib(ByRef SNCode)
 {
 	length:=NumGet(SNCode,1,"UChar")
-	NumPut(Asc("@"),SNCode,length-5,"UChar")
+	NumPut(Asc(","),SNCode,length-5,"UChar")
 	NumPut(0x1A,SNCode,length-4,"UChar")
 	NumPut(0x1B,SNCode,length-3,"UChar")
 	NumPut(0x1C,SNCode,length-2,"UChar")
