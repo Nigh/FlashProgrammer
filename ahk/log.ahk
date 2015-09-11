@@ -27,7 +27,7 @@ writeLog(logs,isNewLog=0)
 	if(isNewLog){
 		date:=A_MM "/" A_DD
 		time:=A_Hour ":" A_Min ":" A_Sec "." A_MSec
-		logDetail.WriteLine(date " " time ":")
+		logDetail.WriteLine("---> " date " " time ":")
 	}
 	logDetail.WriteLine(logs "`r`n")
 }
@@ -37,7 +37,7 @@ SNCodeSuccess(code)
 	global logHandle
 	date:=A_MM "/" A_DD
 	time:=A_Hour ":" A_Min ":" A_Sec "." A_MSec
-	logHandle.WriteLine(date " " time "," code)
+	logHandle.WriteLine(date " " time " [ " code " ]")
 }
 
 getMacNumFromLib(ByRef SNCode)

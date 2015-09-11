@@ -50,23 +50,21 @@ loop, % RawLength
 				loop, % revBuf[2]
 					revCode.=chr(revBuf[A_Index+2])
 				_print.=substr(revCode,1,revBuf[2]-7)
-				_print.= "@"
-				_print.=format_Hex(revBuf[revBuf[2]-3]) "-"
-				_print.=format_Hex(revBuf[revBuf[2]-2]) "-"
-				_print.=format_Hex(revBuf[revBuf[2]-1]) "-"
-				_print.=format_Hex(revBuf[revBuf[2]+0]) "-"
-				_print.=format_Hex(revBuf[revBuf[2]+1]) "-"
-				_print.=format_Hex(revBuf[revBuf[2]+2]) "`r`n"
+				_print.= "@" getMacStrFrom(revBuf) "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
 				if(lastSend and InStr(revCode, lastSend)){
 					Gui, Color, 238d37, 333631
 					print("校对通过!!!`r`n`r`n")
 					writeLog("校对通过 --- OK`r`n",1)
-					SNCodeSuccess(lastSend)
+					temp:=""
+					temp.=substr(revCode,1,revBuf[2]-7)
+					temp.="@"
+					temp.=getMacStrFrom(revBuf)
+					SNCodeSuccess(temp)
 				}Else{
 					Gui, Color, aa3631, 333631
-					writeLog("校对异常:#" revCode "#`r`n",1)
+					writeLog("校对异常:`r`n#" revCode "`r`n#" lastSend "`r`n",1)
 					print("校对异常!!!`r`n`r`n")
 				}
 				GuiControl, Enable, var,
@@ -86,6 +84,18 @@ loop, % RawLength
 ; }
 Return
 
+getMacStrFrom(ByRef buf)
+{
+	temp:=""
+	temp.=format_Hex(buf[buf[2]-3]) "-"
+	temp.=format_Hex(buf[buf[2]-2]) "-"
+	temp.=format_Hex(buf[buf[2]-1]) "-"
+	temp.=format_Hex(buf[buf[2]+0]) "-"
+	temp.=format_Hex(buf[buf[2]+1]) "-"
+	temp.=format_Hex(buf[buf[2]+2])
+	return temp
+}
+
 bufDiff(buf)
 {
 	static buf1:=""
@@ -94,12 +104,9 @@ bufDiff(buf)
 	if(!buf)
 		return 0
 	flag:=!flag
-	if(flag)
-	{
+	if(flag) {
 		buf1:=buf
-	}
-	Else
-	{
+	} Else {
 		buf2:=buf
 	}
 	if(buf1=buf2){
@@ -107,8 +114,7 @@ bufDiff(buf)
 		buf1:=""
 		buf2:=""
 		Return tmp
-	}
-	Else{
+	} Else{
 		Return 0
 	}
 }
