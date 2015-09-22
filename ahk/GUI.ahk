@@ -8,7 +8,7 @@ If(!pToken := Gdip_Startup()){
 
 user_width:=550 ; 客户区宽度
 
-DataLength:=8
+DataLength:=20
 LED_h:=27
 Gui, -Caption +Border +LastFound +Owner +ToolWindow +hwndhGui +AlwaysOnTop
 Gui, Color, 333631, 333631
