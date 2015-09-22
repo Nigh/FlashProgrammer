@@ -135,11 +135,11 @@ gui, Submit, NoHide
 if(StrLen(var)>=DataLength){
 	GuiControl, Text, var,
 	writeLog("扫码: <" var ">",1)
-	; if(!isSNInLib(var)){
-	; 	writeLog("此码不在仓库中")
-	; 	print("<" var "> 此码不在库中`r`n")
-	; 	Exit
-	; }
+	if(!isSNInLib(var)){
+		writeLog("此码不在仓库中")
+		print("<" var "> 此码不在库中`r`n")
+		Exit
+	}
 	temp:=bufDiff(var)
 	if(temp)
 	{

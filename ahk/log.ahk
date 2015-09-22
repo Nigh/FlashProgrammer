@@ -7,11 +7,11 @@ if(!IsObject(logHandle)){
 	ExitApp, -1
 }
 
-; FileRead, snLib, SNCodeLib.csv
-; if(!snLib){
-; 	errorMsg("没有找到SN码仓库，请确认SN码仓库已就位。")
-; 	ExitApp, -2
-; }
+FileRead, snLib, sn_lib.txt
+if(!snLib){
+	errorMsg("没有找到SN码仓库，请确认SN码仓库已就位。")
+	ExitApp, -2
+}
 
 logDetail:=fileOpen("log.log","a")
 
@@ -42,12 +42,30 @@ SNCodeSuccess(code)
 
 getMacNumFromLib(ByRef SNCode)
 {
+	global snLib
 	length:=NumGet(SNCode,1,"UChar")
+
+	sn_Str:=""
+	loop, % length
+	{
+		sn_Str.=chr(NumGet(SNCode,1+A_Index,"UChar"))
+	}
+
+	pos:=instr(snLib,sn_Str)
+	RegExMatch(snLib, "@([0-9A-F][0-9A-F])-([0-9A-F][0-9A-F])-([0-9A-F][0-9A-F])-([0-9A-F][0-9A-F])-([0-9A-F][0-9A-F])-([0-9A-F][0-9A-F])",mac,pos)
+	m1:="0x" mac1
+	m2:="0x" mac2
+	m3:="0x" mac3
+	m4:="0x" mac4
+	m5:="0x" mac5
+	m6:="0x" mac6
+	m1+=0,m2+=0,m3+=0,m4+=0,m5+=0,m6+=0
+
 	NumPut(Asc(","),SNCode,length-5,"UChar")
-	NumPut(0x1A,SNCode,length-4,"UChar")
-	NumPut(0x1B,SNCode,length-3,"UChar")
-	NumPut(0x1C,SNCode,length-2,"UChar")
-	NumPut(0x1D,SNCode,length-1,"UChar")
-	NumPut(0x1E,SNCode,length+0,"UChar")
-	NumPut(0x1F,SNCode,length+1,"UChar")
+	NumPut(m1,SNCode,length-4,"UChar")
+	NumPut(m2,SNCode,length-3,"UChar")
+	NumPut(m3,SNCode,length-2,"UChar")
+	NumPut(m4,SNCode,length-1,"UChar")
+	NumPut(m5,SNCode,length+0,"UChar")
+	NumPut(m6,SNCode,length+1,"UChar")
 }
