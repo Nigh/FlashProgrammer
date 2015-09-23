@@ -30,8 +30,8 @@ Gui, font, s16, Consolas
 Gui, Add, Button, y+5 g_reload, Reload
 Gui, Add, Button, x+10 g_exit, EXIT
 Gui, font, s10 cffffff, ;微软雅黑
-Gui, Add, Text, xs right w%user_width% yp+10 gdrag BackgroundTrans, jiyucheng007@gmail.com
-Gui, Add, Text, xs right w%user_width% y+0 gdrag BackgroundTrans, version 1.4.0 W07
+; Gui, Add, Text, xs right w%user_width% yp+10 gdrag BackgroundTrans, jiyucheng007@gmail.com
+Gui, Add, Text, xs right w%user_width% yp+10 gdrag BackgroundTrans, version 1.4.1 W07
 Gui, Show, AutoSize, 01010001110101010
 WinSet, Transparent, 230, ahk_id %hGui%
 
