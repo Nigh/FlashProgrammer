@@ -59,6 +59,8 @@ loop, % RawLength
 					writeLog("校对通过 --- OK`r`n",1)
 					temp:=""
 					temp.=substr(revCode,1,revBuf[2]-7)
+					vCheckList.=temp "`r`n"
+					hCheckList.write(temp "`r`n")
 					temp.="@"
 					temp.=getMacStrFrom(revBuf)
 					SNCodeSuccess(temp)
@@ -140,11 +142,18 @@ if(StrLen(var)>=DataLength){
 		print("<" var "> 此码不在库中`r`n")
 		Exit
 	}
+	if( InStr(vCheckList, var)>0 ){
+		writeLog("此码已经使用")
+		print("<" var "> 此码已经使用`r`n")
+		Exit
+	}
 	temp:=bufDiff(var)
 	if(temp)
 	{
 		writeLog("两次扫码一致，执行写入[" var "]")
-
+		; vCheckList.=var "`r`n"
+		; hCheckList.write(var "`r`n")
+		
 		VarSetCapacity(SNCode, DataLength+4+7, 0x00)
 		NumPut(0x23, SNCode,0,"UChar")
 		NumPut(DataLength+7, SNCode,1,"UChar")

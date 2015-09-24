@@ -4,6 +4,11 @@
 #include serial.ahk
 OnExit, ExitAll
 
+IfExist, checkList.log
+FileRead, vCheckList, checkList.log
+Else
+vCheckList:=""
+hCheckList:=fileOpen("checkList.log","a")
 
 
 OnMessage(0x219, "ON_DEVICECHANGE")
