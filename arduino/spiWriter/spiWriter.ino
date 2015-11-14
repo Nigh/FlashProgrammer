@@ -29,6 +29,7 @@ void setup(void)
 	gpio(PIN_CLK,0);
 	gpio(PIN_MOSI,0);
 	gpio(PIN_GND,0);
+	Serial.println("Yes, my lord.\n");
 }
 
 
