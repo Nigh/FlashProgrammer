@@ -11,10 +11,10 @@ unsigned char SPI0RXD_RXD=0;
 // const unsigned int PIN_MISO=7;
 // const unsigned int PIN_GND=13;
 
-#define PIN_CS 4
-#define PIN_CLK 5
-#define PIN_MOSI 6
-#define PIN_MISO 7
+#define PIN_CS 47
+#define PIN_CLK 49
+#define PIN_MOSI 51
+#define PIN_MISO 53
 #define PIN_GND 13
 
 void setup(void)
@@ -37,56 +37,32 @@ void loop(void)
 {
 	while(Serial.available()){
 		unsigned char incomingByte = Serial.read();
-		uartParse(incomingByte);
-	}
-}
-
-struct
-{
-	unsigned char buffer[128];		// receive buffer
-	unsigned char length;			// length of receive buffer
-}uartBuffer={{0},0};
-__inline__ void bufPush(unsigned char x)
-{
-	uartBuffer.buffer[ uartBuffer.length ] = x;
-	uartBuffer.length++;
-}
-__inline__ int isCheckSumOK(void)
-{
-	unsigned char sum=0;
-	unsigned char index=2;
-
-	while(index<=uartBuffer.buffer[1]+1){
-		sum+=uartBuffer.buffer[index++];
-	}
-	if(sum==uartBuffer.buffer[index]){
-		return 1;
-	}else{
-		return 0;
-	}
-}
-void uartParse(unsigned char chr)
-{
-	if(uartBuffer.length>=40){
-		uartBuffer.length=0;
-	}
-
-	if(uartBuffer.length==0){
-		if(chr=='#'){
-			bufPush(chr);
+		if(incomingByte=='e'){
+			flash_erase();
 		}
-		return;
 	}
-	bufPush(chr);
+}
 
-	if(uartBuffer.length>=uartBuffer.buffer[1]+3){
-		if(isCheckSumOK()){
-			flashProgram();
-		}else{
-			// Serial.println("CheckSum Error");
-		}
-		uartBuffer.length=0;
-	}
+#define FACTORY_ADDR (0x40200)
+void flash_erase(void){
+	unsigned char _;	// for timeout
+	unsigned char localBuf[17]={0xFF};
+
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(FACTORY_ADDR,localBuf,16);
+
+	Serial.println("Before:");
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);
+	Serial.println("");
+
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_Erase(FACTORY_ADDR);
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(FACTORY_ADDR,localBuf,16);
+
+	Serial.println("After:");
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);
+	Serial.println("");
 }
 
 #define FLASH_WRITE_ENABLE (0x06)
@@ -195,23 +171,23 @@ __inline__ unsigned char _spi0ReadReg(unsigned char addr)
 
 // SN addr:0x40000
 // BLE mac addr:0x40100
-void flashProgram(void)
-{
-	unsigned char buf[64];
-	unsigned char _;	// for timeout
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Erase(0x40000);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40000,uartBuffer.buffer+2,uartBuffer.buffer[1]-7);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-6,6);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
-	buf[uartBuffer.buffer[1]-7]=',';
-	flash_read(0x40100,buf+uartBuffer.buffer[1]-6,6);
-	Serial.write('#');
-	Serial.write(uartBuffer.buffer[1]);
-	Serial.write(buf,uartBuffer.buffer[1]);
-	Serial.write(0xAA);
-}
+// void flashProgram(void)
+// {
+// 	unsigned char buf[64];
+// 	unsigned char _;	// for timeout
+// 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+// 	flash_Erase(0x40000);
+// 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+// 	flash_Write(0x40000,uartBuffer.buffer+2,uartBuffer.buffer[1]-7);
+// 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+// 	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-6,6);
+// 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+// 	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
+// 	buf[uartBuffer.buffer[1]-7]=',';
+// 	flash_read(0x40100,buf+uartBuffer.buffer[1]-6,6);
+// 	Serial.write('#');
+// 	Serial.write(uartBuffer.buffer[1]);
+// 	Serial.write(buf,uartBuffer.buffer[1]);
+// 	Serial.write(0xAA);
+// }
 
