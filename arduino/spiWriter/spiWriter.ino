@@ -42,26 +42,44 @@ void loop(void)
 		}
 	}
 }
-
+#define SN_NUM_ADDR	(0x40000)
+#define MAC_ADDR (0x40100)
 #define FACTORY_ADDR (0x40200)
 void flash_erase(void){
 	unsigned char _;	// for timeout
 	unsigned char localBuf[17]={0xFF};
 
+	Serial.println("Before:");
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(SN_NUM_ADDR,localBuf,16);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(MAC_ADDR,localBuf,16);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_read(FACTORY_ADDR,localBuf,16);
-
-	Serial.println("Before:");
-	_=0;while(_<16) Serial.print(localBuf[_++],HEX);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
 	Serial.println("");
 
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_Erase(SN_NUM_ADDR);
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_Erase(MAC_ADDR);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_Erase(FACTORY_ADDR);
 	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
 	flash_read(FACTORY_ADDR,localBuf,16);
 
 	Serial.println("After:");
-	_=0;while(_<16) Serial.print(localBuf[_++],HEX);
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(SN_NUM_ADDR,localBuf,16);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(MAC_ADDR,localBuf,16);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	flash_read(FACTORY_ADDR,localBuf,16);
+	_=0;while(_<16) Serial.print(localBuf[_++],HEX);Serial.println("");
 	Serial.println("");
 }
 
