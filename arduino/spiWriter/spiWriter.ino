@@ -11,10 +11,10 @@ unsigned char SPI0RXD_RXD=0;
 // const unsigned int PIN_MISO=7;
 // const unsigned int PIN_GND=13;
 
-#define PIN_CS 47
-#define PIN_CLK 49
-#define PIN_MOSI 51
-#define PIN_MISO 53
+#define PIN_CS 4
+#define PIN_CLK 5
+#define PIN_MOSI 6
+#define PIN_MISO 7
 #define PIN_GND 13
 
 void setup(void)
