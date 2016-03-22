@@ -5,7 +5,12 @@ Return
 
 LengthSelect:
 gui, Submit, NoHide
-writeLog("数据长度设置为:" DataLength,1)
+writeLog("更改数据长度设置为:" DataLength,1)
+Return
+
+bpsSelect:
+gui, Submit, NoHide
+writeLog("更改波特率设置为:" bps,1)
 Return
 
 PortSelect:
@@ -15,7 +20,7 @@ if(hSerial!=""){
 	hSerial.close()
 }
 hSerial:=new Serial(ComPorts)
-if(hSerial.begin("115200")<1){
+if(hSerial.begin("" bps)<1){
 	writeLog("Hid设备打开失败",1)
 	setLED(LED_RED)
 	hSerial.close()
@@ -27,6 +32,8 @@ if(hSerial.begin("115200")<1){
 Else
 {
 	writeLog("Hid设备打开成功",1)
+	writeLog("数据长度设置为:" DataLength,1)
+	writeLog("波特率设置为:" bps,1)
 	setLED(LED_GREEN)
 	sHandle:=fileOpen(hSerial.__handle,"h")
 	GuiControl, Enable, var,
