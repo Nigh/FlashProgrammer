@@ -1,43 +1,71 @@
 
-
-// pin configration
 #define gpio(x,n) digitalWrite(x,n)
 #define io_read(x) digitalRead(x)
-unsigned char SPI0RXD_RXD=0;
 
-// const unsigned int PIN_CS=4;
-// const unsigned int PIN_CLK=5;
-// const unsigned int PIN_MOSI=6;
-// const unsigned int PIN_MISO=7;
-// const unsigned int PIN_GND=13;
+#define VCC		(8)
+#define CS		(9)
+#define SCLK	(10)
+#define MISO	(11)
+#define MOSI	(12)
+#define GND		(13)
 
-#define PIN_CS 4
-#define PIN_CLK 5
-#define PIN_MOSI 6
-#define PIN_MISO 7
-#define PIN_GND 13
+#define FLASH_READ_UID (0x4B)
+#define FLASH_WRITE_ENABLE (0x06)
+#define FLASH_READ_STATU_REG1 (0x05)
+#define FLASH_READ_DATA (0x03)
+#define FLASH_PAGE_PROGRAM (0x02)
+#define FLASH_SECTOR_ERASE (0x20)
+
+#define sendStr(str) \
+		Serial.write('#');\
+		Serial.write(sizeof(str)+1);\
+		Serial.write(0xFF);\
+		Serial.print(str);\
+		Serial.write(0xAA);
+
+// shiftOut(dataPin, clock, MSBFIRST, data);
+// byte incoming = shiftIn(dataPin, clockPin, bitOrder)
+
+unsigned char flash_uid[8]={0xFF};
+unsigned char mac_addr[6]={0x00,0x12,0x34,0xab,0xcd,0xef};
 
 void setup(void)
 {
 	Serial.begin(115200);
-	pinMode(PIN_CS,OUTPUT);
-	pinMode(PIN_CLK,OUTPUT);
-	pinMode(PIN_MOSI,OUTPUT);
-	pinMode(PIN_MISO,INPUT);
-	pinMode(PIN_GND,OUTPUT);
-	gpio(PIN_CS,1);
-	gpio(PIN_CLK,0);
-	gpio(PIN_MOSI,0);
-	gpio(PIN_GND,0);
-	Serial.println("Yes, my lord.\n");
+
+	digitalWrite(VCC,0);
+	digitalWrite(GND,0);
+	digitalWrite(CS,1);
+	digitalWrite(SCLK,0);
+	digitalWrite(MOSI,0);
+
+	pinMode(VCC,OUTPUT);
+	pinMode(GND,OUTPUT);
+	pinMode(CS,OUTPUT);
+	pinMode(SCLK,OUTPUT);
+	pinMode(MISO,INPUT);
+	pinMode(MOSI,OUTPUT);
+	digitalWrite(VCC,1);
+
+	sendStr("booting");
 }
 
 
+unsigned int delays=0;
 void loop(void)
 {
 	while(Serial.available()){
 		unsigned char incomingByte = Serial.read();
 		uartParse(incomingByte);
+	}
+	delay(1);delays+=1;
+	if(delays>1000){
+		delays=0;
+		Serial.write('#');
+		Serial.write(2);
+		Serial.write(0xF0);
+		Serial.write(0x01);		// 心跳包
+		Serial.write(0xAA);
 	}
 }
 
@@ -46,12 +74,12 @@ struct
 	unsigned char buffer[128];		// receive buffer
 	unsigned char length;			// length of receive buffer
 }uartBuffer={{0},0};
-__inline__ void bufPush(unsigned char x)
+inline void bufPush(unsigned char x)
 {
 	uartBuffer.buffer[ uartBuffer.length ] = x;
 	uartBuffer.length++;
 }
-__inline__ int isCheckSumOK(void)
+inline int isCheckSumOK(void)
 {
 	unsigned char sum=0;
 	unsigned char index=2;
@@ -81,25 +109,60 @@ void uartParse(unsigned char chr)
 
 	if(uartBuffer.length>=uartBuffer.buffer[1]+3){
 		if(isCheckSumOK()){
-			flashProgram();
+			parser();
+			// flashProgram();
 		}else{
-			// Serial.println("CheckSum Error");
+			sendStr("CheckSum Error");
 		}
 		uartBuffer.length=0;
 	}
 }
 
-#define FLASH_WRITE_ENABLE (0x06)
-#define FLASH_READ_STATU_REG1 (0x05)
-#define FLASH_READ_DATA (0x03)
-#define FLASH_PAGE_PROGRAM (0x02)
-#define FLASH_SECTOR_ERASE (0x20)
+char ble_name[]="BPC-";
+void mac(void)
+{
+	unsigned long writeAddr=0x21100;
+	unsigned long readPtr=0;
+	debug_erase(0x21100);
+	flash_write(0x21100,(unsigned char*)mac_addr,6);
+	flash_wait_idle();
+	flash_write(0x21110,(unsigned char*)ble_name,sizeof(ble_name)-1);
+	flash_wait_idle();
+	flash_write_byte(0x21110+sizeof(ble_name)-1,(mac_addr[0]>>4)+'A');
+	flash_wait_idle();
+	flash_write_byte(0x21110+sizeof(ble_name),(mac_addr[0]&0x0F)+'A');
+	flash_wait_idle();
+	flash_write_byte(0x21110+sizeof(ble_name)+1,0);
+	flash_wait_idle();
+	flash_write_byte(0x2111F,sizeof(ble_name)+1);
+	flash_wait_idle();
+	Serial.println("MAC Program finished");
+}
+
+void debug_erase(unsigned long addr){
+	Serial.print("Start Erasing 0x");
+	Serial.println(addr,HEX);
+	flash_wait_idle();
+	flash_erase(addr);
+	flash_wait_idle();
+	Serial.println("Erased");
+}
+
+int flash_isBusy(void)
+{
+	return !flash_isIdle();
+}
+void flash_wait_idle(void)
+{
+	while(!flash_isIdle()) delay(1);
+}
+
 int flash_isIdle(void)
 {
 	unsigned char flashReg;
-	gpio(PIN_CS,0);
-	flashReg = _spi0ReadReg(FLASH_READ_STATU_REG1);
-	gpio(PIN_CS,1);
+	gpio(CS,0);
+	flashReg = _spiReadReg(FLASH_READ_STATU_REG1);
+	gpio(CS,1);
 	if((flashReg&0x01)==0x01){
 		return 0;
 	}else{
@@ -107,111 +170,131 @@ int flash_isIdle(void)
 	}
 }
 
-int flash_isBusy(void)
+void flash_ReadUID(unsigned char *uid)
 {
-	return !flash_isIdle();
+	gpio(CS,0);
+	_spiWrite(FLASH_READ_UID);
+	_spiWrite(0); _spiWrite(0); _spiWrite(0); _spiWrite(0);
+	*uid++=_spiRead(); *uid++=_spiRead();
+	*uid++=_spiRead(); *uid++=_spiRead();
+	*uid++=_spiRead(); *uid++=_spiRead();
+	*uid++=_spiRead(); *uid++=_spiRead();
+	gpio(CS,1);
 }
 
-void flash_Erase(unsigned long addr)
+void flash_erase(unsigned long addr)
 {
-	gpio(PIN_CS,0);
-	_spi0Write(FLASH_WRITE_ENABLE);
-	gpio(PIN_CS,1);
-	gpio(PIN_CS,0);
-	_spi0Write(FLASH_SECTOR_ERASE);
-	_spi0Write( (unsigned char)((addr>>16)&0xFF) );
-	_spi0Write( (unsigned char)((addr>>8)&0xFF) );
-	_spi0Write( (unsigned char)((addr)&0xFF) );
-	gpio(PIN_CS,1);
+	gpio(CS,0);
+	_spiWrite(FLASH_WRITE_ENABLE);
+	gpio(CS,1);
+	gpio(CS,0);
+	_spiWrite(FLASH_SECTOR_ERASE);
+	_spiWrite( (unsigned char)((addr>>16)&0xFF) );
+	_spiWrite( (unsigned char)((addr>>8)&0xFF) );
+	_spiWrite( (unsigned char)((addr)&0xFF) );
+	gpio(CS,1);
 }
 
-void flash_Write(unsigned long addr,unsigned char *data,unsigned int length)
+void flash_write(unsigned long addr,unsigned char *data,unsigned int length)
 {
-	gpio(PIN_CS,0);
-	_spi0Write(FLASH_WRITE_ENABLE);
-	gpio(PIN_CS,1);
-	gpio(PIN_CS,0);
-	_spi0Write(FLASH_PAGE_PROGRAM);
-	_spi0Write( (unsigned char)((addr>>16)&0xFF) );
-	_spi0Write( (unsigned char)((addr>>8)&0xFF) );
-	_spi0Write( (unsigned char)((addr)&0xFF) );
+	gpio(CS,0);
+	_spiWrite(FLASH_WRITE_ENABLE);
+	gpio(CS,1);
+	gpio(CS,0);
+	_spiWrite(FLASH_PAGE_PROGRAM);
+	_spiWrite( (unsigned char)((addr>>16)&0xFF) );
+	_spiWrite( (unsigned char)((addr>>8)&0xFF) );
+	_spiWrite( (unsigned char)((addr)&0xFF) );
 	while(length-- > 0){
-		_spi0Write( *data++ );
+		_spiWrite( *data++ );
 	}
-	gpio(PIN_CS,1);
+	gpio(CS,1);
 }
+
+void flash_write_byte(unsigned long addr,unsigned char byte)
+{
+	gpio(CS,0);
+	_spiWrite(FLASH_WRITE_ENABLE);
+	gpio(CS,1);
+	gpio(CS,0);
+	_spiWrite(FLASH_PAGE_PROGRAM);
+	_spiWrite( (unsigned char)((addr>>16)&0xFF) );
+	_spiWrite( (unsigned char)((addr>>8)&0xFF) );
+	_spiWrite( (unsigned char)((addr)&0xFF) );
+	_spiWrite( byte );
+	gpio(CS,1);
+}
+
+
 
 void flash_read(unsigned long addr,unsigned char *data,unsigned int length)
 {
-	gpio(PIN_CS,0);
-	_spi0Write(FLASH_READ_DATA);
-	_spi0Write( (unsigned char)((addr>>16)&0xFF) );
-	_spi0Write( (unsigned char)((addr>>8)&0xFF) );
-	_spi0Write( (unsigned char)((addr)&0xFF) );
+	gpio(CS,0);
+	_spiWrite(FLASH_READ_DATA);
+	_spiWrite( (unsigned char)((addr>>16)&0xFF) );
+	_spiWrite( (unsigned char)((addr>>8)&0xFF) );
+	_spiWrite( (unsigned char)((addr)&0xFF) );
 	while(length-- > 0){
-		*data++=_spi0Read();
+		*data++=_spiRead();
 	}
-	gpio(PIN_CS,1);
+	gpio(CS,1);
 }
 
-// #define gpio(x,n) digitalWrite(x,n)
-// #define io_read(x) digitalRead(x)
-__inline__ void _spi0Write(unsigned char var)
+
+inline void _spiWrite(unsigned char var)
 {
-	gpio(PIN_CLK,0);
-	SPI0RXD_RXD = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if((var&0x80)>0) gpio(PIN_MOSI,1);
-		else gpio(PIN_MOSI,0);
-		var <<= 1;
-		gpio(PIN_CLK,1);
-		SPI0RXD_RXD<<=1;
-		if( io_read(PIN_MISO)>0 ) SPI0RXD_RXD|=0x01;
-		delayMicroseconds(1);
-		gpio(PIN_CLK,0);
+	shiftOut(MOSI, SCLK, MSBFIRST, var);
+}
+
+inline unsigned char _spiRead(void)
+{
+	return shiftIn(MISO, SCLK, MSBFIRST);
+}
+
+inline void _spiWriteReg(unsigned char addr,unsigned char val)
+{
+	_spiWrite(addr);
+	_spiWrite(val);
+}
+inline unsigned char _spiReadReg(unsigned char addr)
+{
+	shiftOut(MOSI, SCLK, MSBFIRST, addr);
+	return shiftIn(MISO, SCLK, MSBFIRST);
+}
+
+void parser(void)
+{
+	unsigned char _;
+	unsigned long addr;
+	unsigned char buf[16];
+	addr = (uartBuffer.buffer[3]<<16) | (uartBuffer.buffer[4]<<8) | uartBuffer.buffer[5];
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	switch(uartBuffer.buffer[2]){
+		case 0x01:	// read
+		flash_read(addr,buf,16);
+		Serial.write('#');
+		Serial.write(1+3+16);
+		Serial.write(uartBuffer.buffer+2,4);
+		Serial.write(buf,16);
+		Serial.write(0xAA);
+		break;
+		case 0x02:	// write
+		flash_write(addr,uartBuffer.buffer+1+1+3,uartBuffer.buffer[1]-1-3);
+		_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+		Serial.write('#');
+		Serial.write(2);
+		Serial.write(uartBuffer.buffer[2]);
+		Serial.write(0x01);
+		Serial.write(0xAA);
+		break;
+		case 0x03:	// erase
+		flash_erase(addr);
+		_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+		Serial.write('#');
+		Serial.write(2);
+		Serial.write(uartBuffer.buffer[2]);
+		Serial.write(0x01);
+		Serial.write(0xAA);
+		break;
 	}
-	gpio(PIN_CLK,0);
 }
-
-__inline__ unsigned char _spi0Read(void)
-{
-	_spi0Write(0x00);
-	return SPI0RXD_RXD;
-}
-
-__inline__ void _spi0WriteReg(unsigned char addr,unsigned char val)
-{
-	_spi0Write(addr);
-	_spi0Write(val);
-}
-
-__inline__ unsigned char _spi0ReadReg(unsigned char addr)
-{
-	_spi0Write(addr);
-	return _spi0Read();
-}
-
-
-// SN addr:0x40000
-// BLE mac addr:0x40100
-void flashProgram(void)
-{
-	unsigned char buf[64];
-	unsigned char _;	// for timeout
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Erase(0x40000);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40000,uartBuffer.buffer+2,uartBuffer.buffer[1]-7);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_Write(0x40100,uartBuffer.buffer+2+uartBuffer.buffer[1]-6,6);
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
-	flash_read(0x40000,buf,uartBuffer.buffer[1]-7);
-	buf[uartBuffer.buffer[1]-7]=',';
-	flash_read(0x40100,buf+uartBuffer.buffer[1]-6,6);
-	Serial.write('#');
-	Serial.write(uartBuffer.buffer[1]);
-	Serial.write(buf,uartBuffer.buffer[1]);
-	Serial.write(0xAA);
-}
-

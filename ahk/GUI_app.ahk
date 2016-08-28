@@ -41,6 +41,9 @@ Else
 }
 Return
 
+
+prog:=""	; 进度
+
 SerialRead:
 if(!sHandle)
 Return
@@ -52,30 +55,71 @@ loop, % RawLength
 	if(revBuf[1]=0x23){
 		if(revBuf.MaxIndex()>1){
 			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
-				_print:="接收打印:"
-				revCode:=""
-				loop, % revBuf[2]
-					revCode.=chr(revBuf[A_Index+2])
-				_print.=substr(revCode,1,revBuf[2]-7)
-				_print.= "@" getMacStrFrom(revBuf) "`r`n"
+				_print:="接收:"
+				if(revBuf[3]=0xF0){
+					_print:="."
+				}
+				if(revBuf[3]=0xFF){
+					loop, % revBuf[2]-1
+					{
+						_print.=Chr(revBuf[3+A_Index])
+					}
+				}
+				if(revBuf[3]=0x01){		; read
+					_print.="addr:" format_Hex(revBuf[4]) " " format_Hex(revBuf[5]) " " format_Hex(revBuf[6]) ":"
+					loop, % revBuf[2]-4
+						_print.=format_Hex(revBuf[6+A_Index])
+					if(prog="read mac"){
+						prog:="erase"
+					}
+					if(prog="read mac2"){
+						prog:="read name2"
+					}
+					if(prog="read name2"){
+						prog:=""
+					}
+				}
+				if(revBuf[3]=0x02){		; write
+					_print.="写入完成！`r`n"
+					readMac()
+					if(prog="write mac"){
+						writeName()
+						prog:="write name"
+					}
+					if(prog="write name"){
+						prog:="read mac2"
+					}
+				}
+				if(revBuf[3]=0x03){		; erase
+					_print.="擦除完成！`r`n"
+					if(prog="erase"){
+						writeMac()
+						prog:="write mac"
+					}
+				}
+				; revCode:=""
+				; loop, % revBuf[2]
+				; 	revCode.=chr(revBuf[A_Index+2])
+				; _print.=substr(revCode,1,revBuf[2]-7)
+				; _print.= "@" getMacStrFrom(revBuf) "`r`n"
 				SetTimer, timeOut, Off
 				print(_print)
-				if(lastSend and InStr(revCode, lastSend)){
-					Gui, Color, 238d37, 333631
-					print("校对通过!!!`r`n`r`n")
-					writeLog("校对通过 --- OK`r`n",1)
-					temp:=""
-					temp.=substr(revCode,1,revBuf[2]-7)
-					vCheckList.=temp "`r`n"
-					hCheckList.write(temp "`r`n")
-					temp.="@"
-					temp.=getMacStrFrom(revBuf)
-					SNCodeSuccess(temp)
-				}Else{
-					Gui, Color, aa3631, 333631
-					writeLog("校对异常:`r`n#" revCode "`r`n#" lastSend "`r`n",1)
-					print("校对异常!!!`r`n`r`n")
-				}
+				; if(lastSend and InStr(revCode, lastSend)){
+				; 	Gui, Color, 238d37, 333631
+				; 	print("校对通过!!!`r`n`r`n")
+				; 	writeLog("校对通过 --- OK`r`n",1)
+				; 	temp:=""
+				; 	temp.=substr(revCode,1,revBuf[2]-7)
+				; 	vCheckList.=temp "`r`n"
+				; 	hCheckList.write(temp "`r`n")
+				; 	temp.="@"
+				; 	temp.=getMacStrFrom(revBuf)
+				; 	SNCodeSuccess(temp)
+				; }Else{
+				; 	Gui, Color, aa3631, 333631
+				; 	writeLog("校对异常:`r`n#" revCode "`r`n#" lastSend "`r`n",1)
+				; 	print("校对异常!!!`r`n`r`n")
+				; }
 				GuiControl, Enable, var,
 				GuiControl, Focus, var
 				; Control,EditPaste,% _print,, ahk_id %edit%
@@ -211,6 +255,23 @@ print("接收超时!!!`r`n`r`n")
 Gui, Color, aa3631, 333631
 GuiControl, Enable, var,
 GuiControl, Focus, var
+Return
+
+writeMac()
+{
+	global
+	VarSetCapacity(SNCode, DataLength+4+7, 0x00)
+	hSerial.Write(&SNCode,DataLength+3+7)
+}
+
+writeName()
+{
+	global
+
+}
+
+_program:
+prog:="read mac"
 Return
 
 print(txt)

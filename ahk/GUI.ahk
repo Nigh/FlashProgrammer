@@ -13,27 +13,27 @@ LED_h:=27
 Gui, -Caption +Border +LastFound +Owner +ToolWindow +hwndhGui +AlwaysOnTop
 Gui, Color, 333631, 333631
 Gui, font, s34 cffffff, Impact
-Gui, Add, Text, section w%user_width% center gdrag,W07 Flash Programmer
+Gui, Add, Text, section w%user_width% center gdrag,BPC Flash Programmer
 Gui, font, s12 cffffff, Consolas
 Gui, Add, Text, w50,Port:
 Gui, Add, DDL,x+5 w130 h%LED_h% r7 vComPorts gPortSelect,
 gui, add, Pic,x+10 w27 h%LED_h% Border 0xE hwndstatuLED
-Gui, Add, Text,x+100,Length:
-Gui, Add, DDL,x+5 w130 h%LED_h% r7 choose%DataLength% vDataLength gLengthSelect, 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30
+; Gui, Add, Text,x+100,Length:
+; Gui, Add, DDL,x+5 w130 h%LED_h% r7 choose%DataLength% vDataLength gLengthSelect, 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30
 ; Gui, Add, Button, x+10 h%LED_h%, Connect
 Gui, Add, Text,xs y+5 w50,BPS:
-Gui, Add, DDL,x+5 w130 h%LED_h% r7 choose3 vbps gbpsSelect, 9600|38400|57600|115200
+Gui, Add, DDL,x+5 w130 h%LED_h% r7 choose4 vbps gbpsSelect, 9600|38400|57600|115200
 Gui, Add, Text, xm y+10,Log:
 Gui, Add, Edit, ReadOnly c27cfff y+0 w%user_width% r18 voutput Hwndedit,
-Gui, Add, Text, xm y+10,SN Code:
-Gui, Add, Edit, y+0 w%user_width% r1 vvar ginput Disabled, 
-
+; Gui, Add, Text, xm y+10,SN Code:
+; Gui, Add, Edit, y+0 w%user_width% r1 vvar ginput Disabled, 
 Gui, font, s16, Consolas
-Gui, Add, Button, y+5 g_reload, Reload
+Gui, Add, Button, w130 y+5 g_program, 烧录
+Gui, Add, Button, x+250 g_reload, Reload
 Gui, Add, Button, x+10 g_exit, EXIT
 Gui, font, s10 cffffff, ;微软雅黑
 ; Gui, Add, Text, xs right w%user_width% yp+10 gdrag BackgroundTrans, jiyucheng007@gmail.com
-Gui, Add, Text, xs right w%user_width% yp+10 gdrag BackgroundTrans, version 1.5.0 Uni
+Gui, Add, Text, xs right w%user_width% yp+50 gdrag BackgroundTrans, version 2.0.0 Sart
 Gui, Show, AutoSize, 01010001110101010
 WinSet, Transparent, 230, ahk_id %hGui%
 
