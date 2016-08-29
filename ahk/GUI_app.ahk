@@ -1,11 +1,13 @@
 ﻿
-drag:
-PostMessage, 0xA1, 2
+init:
+init_mac:="24-4E-7B-2X-XX-XX"
+init0:=0
+init1:=0
 Return
 
-LengthSelect:
-gui, Submit, NoHide
-writeLog("更改数据长度设置为:" DataLength,1)
+
+drag:
+PostMessage, 0xA1, 2
 Return
 
 bpsSelect:
@@ -32,8 +34,7 @@ if(hSerial.begin("" bps)<1){
 Else
 {
 	writeLog("Hid设备打开成功",1)
-	writeLog("数据长度设置为:" DataLength,1)
-	writeLog("波特率设置为:" bps,1)
+	writeLog("波特率设置为:" bps)
 	setLED(LED_GREEN)
 	sHandle:=fileOpen(hSerial.__handle,"h")
 	GuiControl, Enable, var,
@@ -57,7 +58,8 @@ loop, % RawLength
 			if(revBuf[2]+3<32 and revBuf.MaxIndex()>=revBuf[2]+3){
 				_print:="接收:"
 				if(revBuf[3]=0xF0){
-					_print:="."
+					; _print:=".`r`n"
+					_print:=""
 				}
 				if(revBuf[3]=0xFF){
 					loop, % revBuf[2]-1
@@ -66,36 +68,49 @@ loop, % RawLength
 					}
 				}
 				if(revBuf[3]=0x01){		; read
-					_print.="addr:" format_Hex(revBuf[4]) " " format_Hex(revBuf[5]) " " format_Hex(revBuf[6]) ":"
-					loop, % revBuf[2]-4
-						_print.=format_Hex(revBuf[6+A_Index])
-					if(prog="read mac"){
-						prog:="erase"
+					addr:=format_Hex(revBuf[4]) format_Hex(revBuf[5]) format_Hex(revBuf[6])
+					hex:=""
+					name:=""
+					if(addr="021100"){
+						loop, % revBuf[2]-14
+							hex.=format_Hex(revBuf[6+A_Index]) ","
+						_print.="addr:0x" addr ":" hex "`r`n"					
+						if(__flag=0){
+							__flag:=1
+							writeLog("Read MAC1:" hex,1)
+						}
+						if(__flag=3){
+							__flag:=4
+							writeLog("Read MAC2:" hex)
+							Gui, Color, % color.success, % color.normal
+							init0:=Mod(init0+1,0xFF)
+							if(init0=0){
+								init1:=Mod(init1+1,0xFF)
+							}
+						}
 					}
-					if(prog="read mac2"){
-						prog:="read name2"
-					}
-					if(prog="read name2"){
-						prog:=""
+					if(addr="021110"){
+						loop, % revBuf[2]-14
+							name.=Chr(revBuf[6+A_Index])
+						_length:=revBuf[revBuf.MaxIndex()-1]
+						_print.="addr:0x" addr ":" name " (" _length ")`r`n"
 					}
 				}
 				if(revBuf[3]=0x02){		; write
 					_print.="写入完成！`r`n"
-					readMac()
-					if(prog="write mac"){
-						writeName()
-						prog:="write name"
+					if(__flag=2){
+						__flag:=3
+						writeLog("Write Success")
 					}
-					if(prog="write name"){
-						prog:="read mac2"
-					}
+
 				}
 				if(revBuf[3]=0x03){		; erase
 					_print.="擦除完成！`r`n"
-					if(prog="erase"){
-						writeMac()
-						prog:="write mac"
+					if(__flag=1){
+						__flag:=2
+						writeLog("Erase Success")
 					}
+
 				}
 				; revCode:=""
 				; loop, % revBuf[2]
@@ -105,7 +120,7 @@ loop, % RawLength
 				SetTimer, timeOut, Off
 				print(_print)
 				; if(lastSend and InStr(revCode, lastSend)){
-				; 	Gui, Color, 238d37, 333631
+				; 	Gui, Color, % color.success, % color.normal
 				; 	print("校对通过!!!`r`n`r`n")
 				; 	writeLog("校对通过 --- OK`r`n",1)
 				; 	temp:=""
@@ -116,7 +131,7 @@ loop, % RawLength
 				; 	temp.=getMacStrFrom(revBuf)
 				; 	SNCodeSuccess(temp)
 				; }Else{
-				; 	Gui, Color, aa3631, 333631
+				; 	Gui, Color, % color.wrong, % color.normal
 				; 	writeLog("校对异常:`r`n#" revCode "`r`n#" lastSend "`r`n",1)
 				; 	print("校对异常!!!`r`n`r`n")
 				; }
@@ -240,7 +255,7 @@ if(StrLen(var)>=DataLength){
 		GuiControl, , var,
 		GuiControl, Disable, var,
 		SetTimer, timeOut, -3000
-		Gui, Color, 333631, 333631
+		Gui, Color, % color.normal, % color.normal
 	}
 	Else
 	{
@@ -250,28 +265,152 @@ if(StrLen(var)>=DataLength){
 Return
 
 timeOut:
-writeLog("校对超时",1)
+writeLog("超时",1)
 print("接收超时!!!`r`n`r`n")
-Gui, Color, aa3631, 333631
+Gui, Color, % color.wrong, % color.normal
 GuiControl, Enable, var,
 GuiControl, Focus, var
 Return
 
-writeMac()
-{
-	global
-	VarSetCapacity(SNCode, DataLength+4+7, 0x00)
-	hSerial.Write(&SNCode,DataLength+3+7)
-}
 
-writeName()
-{
-	global
+_read:
+Gosub, _readmac
+Gosub, _readname
+Return
 
+; 0x21100 mac
+; 0x21110 name
+_readmac:
+_array:=[0x23,4,0x01,0x02,0x11,0x00,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
 }
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+Return
+
+_readname:
+_array:=[0x23,4,0x01,0x02,0x11,0x10,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
+}
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+Return
+
+_erase:
+_array:=[0x23,4,0x03,0x02,0x11,0x00,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
+}
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+Return
+
+_write:
+_array:=[0x23,10,0x02,0x02,0x11,0x00,init0,init1,0x20,0x7B,0x4E,0x24,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
+}
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+
+_array:=[0x23,11,0x02,0x02,0x11,0x10,Asc("B"),Asc("P"),Asc("C"),Asc("-")
+,Asc(substr(format_Hex(init0),-1))
+,Asc(substr(format_Hex(init0),0))
+,0x00,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
+}
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+
+_array:=[0x23,5,0x02,0x02,0x11,0x1F,6,0xFF]
+VarSetCapacity(array, _array.MaxIndex(), 0x00)
+loop, % _array.MaxIndex()
+{
+	NumPut(_array[A_Index],array,A_Index-1,"UChar")
+}
+checkSum:=0
+loop, % _array.MaxIndex()-3
+{
+	checkSum+=_array[A_Index+2]
+}
+checkSum&=0xFF
+NumPut(checkSum,array,_array.MaxIndex()-1,"UChar")
+hSerial.Write(&array,_array.MaxIndex())
+Return
+
 
 _program:
-prog:="read mac"
+Gui, Color, % color.normal, % color.normal
+__flag:=0	; 进程flag
+SetTimer, timeOut, -3000
+Gosub, _read
+while(__flag=0){
+	Sleep, 50
+	if(A_Index>19)
+		Return
+}
+Gosub, _erase
+while(__flag=1){
+	Sleep, 50
+	if(A_Index>19)
+		Return
+}
+Gosub, _write
+while(__flag=2){
+	Sleep, 50
+	if(A_Index>19)
+		Return
+}
+Gosub, _read
+while(__flag=3){
+	Sleep, 50
+	if(A_Index>19)
+		Return
+}
+SetTimer, timeOut, Off
 Return
 
 print(txt)

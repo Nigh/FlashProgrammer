@@ -27,7 +27,7 @@ writeLog(logs,isNewLog=0)
 	if(isNewLog){
 		date:=A_MM "/" A_DD
 		time:=A_Hour ":" A_Min ":" A_Sec "." A_MSec
-		logDetail.WriteLine("---> " date " " time ":")
+		logDetail.WriteLine("`r`n---> " date " " time ":`r`n")
 	}
 	logDetail.WriteLine(logs "`r`n")
 }

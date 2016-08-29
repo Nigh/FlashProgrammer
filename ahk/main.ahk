@@ -4,27 +4,14 @@
 #include serial.ahk
 OnExit, ExitAll
 
-IfExist, checkList.log
-FileRead, vCheckList, checkList.log
-Else
-vCheckList:=""
-hCheckList:=fileOpen("checkList.log","a")
-
-
 OnMessage(0x219, "ON_DEVICECHANGE")
 SetFormat, Integer, HEX
-
-; if(hSerial!=""){
-; 	hSerial.close()
-; }
-; hSerial:=new Serial("COM7")
-; hSerial.begin("115200")
-; sHandle:=fileOpen(hSerial.__handle,"h")
 
 #include log.ahk
 SetTimer, SerialRead, 150
 #include GUI.ahk
 ON_DEVICECHANGE(0,0,0,0)
+Gosub, init
 Return
 
 #include GUI_app.ahk
@@ -43,12 +30,7 @@ ON_DEVICECHANGE(wp,lp,msg,hwnd)
 		GuiControl, , var,
 		GuiControl, Disable, var,
 	}
-	; output:=""
-	; Loop, Parse, ComList, |,
-	; 	output.=A_LoopField "`n"
-	; Msgbox, % ComList
 	GuiControl, , ComPorts, % ComList
-	; Msgbox, % ComList "`n`n" output
 }
 
 

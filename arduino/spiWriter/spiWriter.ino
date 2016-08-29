@@ -266,9 +266,9 @@ void parser(void)
 {
 	unsigned char _;
 	unsigned long addr;
-	unsigned char buf[16];
-	addr = (uartBuffer.buffer[3]<<16) | (uartBuffer.buffer[4]<<8) | uartBuffer.buffer[5];
-	_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+	unsigned char buf[32];
+	addr = ((unsigned long)uartBuffer.buffer[3]<<16) | (uartBuffer.buffer[4]<<8) | uartBuffer.buffer[5];
+	_=0;while(flash_isBusy()>0) {delay(50);if(_++>20)return;}
 	switch(uartBuffer.buffer[2]){
 		case 0x01:	// read
 		flash_read(addr,buf,16);
@@ -279,8 +279,8 @@ void parser(void)
 		Serial.write(0xAA);
 		break;
 		case 0x02:	// write
-		flash_write(addr,uartBuffer.buffer+1+1+3,uartBuffer.buffer[1]-1-3);
-		_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+		flash_write(addr,uartBuffer.buffer+2+1+3,uartBuffer.buffer[1]-1-3);
+		_=0;while(flash_isBusy()>0) {delay(50);if(_++>20)return;}
 		Serial.write('#');
 		Serial.write(2);
 		Serial.write(uartBuffer.buffer[2]);
@@ -289,7 +289,7 @@ void parser(void)
 		break;
 		case 0x03:	// erase
 		flash_erase(addr);
-		_=0;while(flash_isBusy()>0) {delay(50);if(_++>40)return;}
+		_=0;while(flash_isBusy()>0) {delay(50);if(_++>20)return;}
 		Serial.write('#');
 		Serial.write(2);
 		Serial.write(uartBuffer.buffer[2]);
