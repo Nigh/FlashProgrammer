@@ -1,7 +1,7 @@
 ﻿
 init:
 init_mac:="24-4E-7B-2X-XX-XX"
-init0:=0
+init0:=0xE4
 init1:=0
 Return
 
@@ -76,8 +76,18 @@ loop, % RawLength
 							hex.=format_Hex(revBuf[6+A_Index]) ","
 						_print.="addr:0x" addr ":" hex "`r`n"					
 						if(__flag=0){
-							__flag:=1
 							writeLog("Read MAC1:" hex,1)
+							__flag:=1
+							loop, 6
+							{
+								if(revBuf[6+A_Index]!=0xFF){
+									Gui, Color, % color.notice, % color.normal
+									_print.="Flash非空！！！`r`n"
+									__flag:=0
+									SetTimer, timeout, Off
+									Break
+								}
+							}
 						}
 						if(__flag=3){
 							__flag:=4

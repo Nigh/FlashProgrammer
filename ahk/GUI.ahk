@@ -6,12 +6,10 @@ If(!pToken := Gdip_Startup()){
 ; _DEBUG_:=1
 
 color:=Object()
-; color.normal:="333631"
-; color.wrong:="aa3631"
-; color.success:="238d37"
 color.normal:="111111"
 color.wrong:="aa3631"
 color.success:="238d37"
+color.notice:="878d3A"
 
 user_width:=550 ; 客户区宽度
 
@@ -36,9 +34,9 @@ Gui, Add, Edit, ReadOnly c27cfff y+0 w%user_width% r18 voutput Hwndedit,
 ; Gui, Add, Edit, y+0 w%user_width% r1 vvar ginput Disabled, 
 Gui, font, s16, Consolas
 Gui, Add, Button, w130 y+5 g_program, 烧录
-Gui, Add, Button, w60 x+5 g_read, read
-Gui, Add, Button, w60 x+5 g_erase, erase
-Gui, Add, Button, w60 x+5 g_write, write
+; Gui, Add, Button, w60 x+5 g_read, read
+; Gui, Add, Button, w60 x+5 g_erase, erase
+; Gui, Add, Button, w60 x+5 g_write, write
 Gui, Add, Button, x+250 g_reload, Reload
 Gui, Add, Button, x+10 g_exit, EXIT
 Gui, font, s10 cffffff, ;微软雅黑
